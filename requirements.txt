@@ -6,6 +6,6 @@ matplotlib==2.0.0
 scikit-image==0.12.3
 scipy==0.18.1
 pyparsing==2.1.4
-
+pydicom==0.9.9
 
 
