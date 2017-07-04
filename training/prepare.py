@@ -177,6 +177,7 @@ def full_prep(step1=True,step2 = True):
         partial_savenpy = partial(savenpy,annos= alllabel,filelist=filelist,data_path=data_path,prep_folder=prep_folder )
 
         N = len(filelist)
+        print("Pool number: ", N) #mig
             #savenpy(1)
         _=pool.map(partial_savenpy,range(N))
         pool.close()

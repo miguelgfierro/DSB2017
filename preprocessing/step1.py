@@ -226,6 +226,7 @@ def two_lung_only(bw, spacing, max_iter=22, max_ratio=4.8):
     return bw1, bw2, bw
 
 def step1_python(case_path):
+    print("Loading scan: {}".format(case_path)) #mig
     case = load_scan(case_path)
     case_pixels, spacing = get_pixels_hu(case)
     bw = binarize_per_slice(case_pixels, spacing)
