@@ -55,8 +55,8 @@ parser.add_argument('--n_test', default=8, type=int, metavar='N',
 def main():
     global args
     args = parser.parse_args()
-    
-    print("Setting torch options") #mig    
+    print("MIGLOG: arguments -> {}".format(args))
+    print("MIGLOG: Setting torch options")     
     torch.manual_seed(0)
     torch.cuda.set_device(0)
 
@@ -122,24 +122,26 @@ def main():
         return
 
     #net = DataParallel(net)
-    print("Preparing datasets") #mig
+    print("MIGLOG: Preparing datasets data.DataBowl3Detector")
     dataset = data.DataBowl3Detector(
         datadir,
         'kaggleluna_full.npy',
         config,
         phase = 'train')
+    print("MIGLOG: Preparing datasets DataLoader")
     train_loader = DataLoader(
         dataset,
         batch_size = args.batch_size,
         shuffle = True,
         num_workers = args.workers,
         pin_memory=True)
-
+    print("MIGLOG: Preparing datasets data.DataBowl3Detector validation")
     dataset = data.DataBowl3Detector(
         datadir,
         'valsplit.npy',
         config,
         phase = 'val')
+    print("MIGLOG: Preparing datasets DataLoader validation ")
     val_loader = DataLoader(
         dataset,
         batch_size = args.batch_size,
@@ -147,6 +149,7 @@ def main():
         num_workers = args.workers,
         pin_memory=True)
 
+    print("MIGLOG: Setting torch training parameters")
     optimizer = torch.optim.SGD(
         net.parameters(),
         args.lr,
@@ -162,9 +165,11 @@ def main():
             lr = 0.01 * args.lr
         return lr
     
-
+    print("MIGLOG: Starting training...")
     for epoch in range(start_epoch, args.epochs + 1):
+        print("MIGLOG: Training detector in epoch {}".format(epoch))
         train(train_loader, net, loss, epoch, optimizer, get_lr, args.save_freq, save_dir)
+        print("MIGLOG: Validating detector in epoch {}".format(epoch))
         validate(val_loader, net, loss)
 
 def train(data_loader, net, loss, epoch, optimizer, get_lr, save_freq, save_dir):
@@ -345,7 +350,7 @@ def singletest(data,net,config,splitfun,combinefun,n_per_run,margin = 64,isfeat=
     else:
         return output
 if __name__ == '__main__':
-    print("Starting process")
+    print("MIGLOG: Starting process main detector")
     main()
-    print("Routine finished")
+    print("MIGLOG: Routine finished main detector")
 

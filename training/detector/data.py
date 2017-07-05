@@ -25,7 +25,9 @@ class DataBowl3Detector(Dataset):
         self.augtype = config['augtype']
         self.pad_value = config['pad_value']
         self.split_comber = split_comber
+        print("MIGLOG: In DataBowl3Detector, Split path: ", split_path)
         idcs = np.load(split_path)
+        print("MIGLOG: Shape idcs: {}".format(idcs.shape))
         if phase!='test':
             idcs = [f for f in idcs if (f not in self.blacklist)]
 
@@ -37,7 +39,7 @@ class DataBowl3Detector(Dataset):
         
         for idx in idcs:
             #l = np.load(os.path.join(data_dir, '%s_label.npy' %idx))
-            l = np.load(os.path.join(data_dir, '{}_label.npy'.format(idx))) #mig
+            l = np.load(os.path.join(data_dir, '%s_label.npy' %idx.astype(str))) #mig
             if np.all(l==0):
                 l=np.array([])
             labels.append(l)
@@ -55,8 +57,9 @@ class DataBowl3Detector(Dataset):
                         if t[3]>sizelim3:
                             self.bboxes+=[[np.concatenate([[i],t])]]*4
             self.bboxes = np.concatenate(self.bboxes,axis = 0)
-
+        print("MIGLOG: In DataBowl3Detector Crop(config)")
         self.crop = Crop(config)
+        print("MIGLOG: In DataBowl3Detector  LabelMapping(config, self.phase)")
         self.label_mapping = LabelMapping(config, self.phase)
 
     def __getitem__(self, idx,split=None):
@@ -121,7 +124,8 @@ class DataBowl3Detector(Dataset):
 
     def __len__(self):
         if self.phase == 'train':
-            return len(self.bboxes)/(1-self.r_rand)
+            #return len(self.bboxes)/(1-self.r_rand)
+            return int(len(self.bboxes)/(1-self.r_rand))
         elif self.phase =='val':
             return len(self.bboxes)
         else:
