@@ -125,7 +125,7 @@ class DataBowl3Detector(Dataset):
     def __len__(self):
         if self.phase == 'train':
             #return len(self.bboxes)/(1-self.r_rand)
-            return int(len(self.bboxes)/(1-self.r_rand))
+            return int(len(self.bboxes)/(1-self.r_rand)) #mig
         elif self.phase =='val':
             return len(self.bboxes)
         else:
@@ -226,7 +226,11 @@ class Crop(object):
             max(start[0],0):min(start[0] + crop_size[0],imgs.shape[1]),
             max(start[1],0):min(start[1] + crop_size[1],imgs.shape[2]),
             max(start[2],0):min(start[2] + crop_size[2],imgs.shape[3])]
-        crop = np.pad(crop,pad,'constant',constant_values =self.pad_value)
+        #print("MIGLOG: inside class Crop: crop: {},pad: {},constant_values: {}".format(crop,pad,self.pad_value))
+        #crop = np.pad(crop,pad,'constant',constant_values=self.pad_value)
+        #MIGBUG: After several iterations I got a TypeError: `pad_width` must be of integral type.
+        crop = np.pad(crop,np.array(pad,dtype='int'),'constant',constant_values=self.pad_value)
+        
         for i in range(3):
             target[i] = target[i] - start[i] 
         for i in range(len(bboxes)):

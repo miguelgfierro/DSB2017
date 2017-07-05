@@ -20,6 +20,9 @@ from config_training import config as config_training
 
 from layers import acc
 
+import warnings #mig
+warnings.filterwarnings("ignore") #mig
+
 parser = argparse.ArgumentParser(description='PyTorch DataBowl3 Detector')
 parser.add_argument('--model', '-m', metavar='MODEL', default='base',
                     help='model')
