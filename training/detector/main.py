@@ -56,7 +56,7 @@ def main():
     global args
     args = parser.parse_args()
     
-    
+    print("Setting torch options") #mig    
     torch.manual_seed(0)
     torch.cuda.set_device(0)
 
@@ -122,7 +122,7 @@ def main():
         return
 
     #net = DataParallel(net)
-    
+    print("Preparing datasets") #mig
     dataset = data.DataBowl3Detector(
         datadir,
         'kaggleluna_full.npy',
@@ -345,5 +345,7 @@ def singletest(data,net,config,splitfun,combinefun,n_per_run,margin = 64,isfeat=
     else:
         return output
 if __name__ == '__main__':
+    print("Starting process")
     main()
+    print("Routine finished")
 
