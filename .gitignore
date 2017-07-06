@@ -3,6 +3,6 @@
 training/.flag*
 *.swp
 prediction*.csv
-
+nohup.out
 
 

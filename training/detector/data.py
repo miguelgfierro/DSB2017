@@ -99,6 +99,9 @@ class DataBowl3Detector(Dataset):
             sample = (sample.astype(np.float32)-128)/128
             #if filename in self.kagglenames and self.phase=='train':
             #    label[label==-1]=0
+            #print("MIGLOG: in DataBowl3Detector getitem -> sample.shape={}".format(sample.shape))
+            #print("MIGLOG: in DataBowl3Detector getitem -> label.shape={}".format(label.shape))
+            #print("MIGLOG: in DataBowl3Detector getitem -> coord.shape={}".format(coord.shape))
             return torch.from_numpy(sample), torch.from_numpy(label), coord
         else:
             imgs = np.load(self.filenames[idx])
@@ -120,6 +123,9 @@ class DataBowl3Detector(Dataset):
                                                    margin = self.split_comber.margin/self.stride)
             assert np.all(nzhw==nzhw2)
             imgs = (imgs.astype(np.float32)-128)/128
+            #print("MIGLOG: in DataBowl3Detector getitem -> imgs.shape={}".format(img.shape))
+            #print("MIGLOG: in DataBowl3Detector getitem -> coord2.shape={}".format(coord2.shape))
+            #print("MIGLOG: in DataBowl3Detector getitem -> nzhw.shape={}".format(nzhw.shape))
             return torch.from_numpy(imgs), bboxes, torch.from_numpy(coord2), np.array(nzhw)
 
     def __len__(self):
@@ -207,7 +213,8 @@ class Crop(object):
                 start.append(np.random.randint(e,s))#!
             else:
                 start.append(int(target[i])-crop_size[i]/2+np.random.randint(-bound_size/2,bound_size/2))
-                
+                #s_int = int(int(target[i])-crop_size[i]/2+np.random.randint(-bound_size/2,bound_size/2))
+                #start.append(s_int)
                 
         normstart = np.array(start).astype('float32')/np.array(imgs.shape[1:])-0.5
         normsize = np.array(crop_size).astype('float32')/np.array(imgs.shape[1:])
@@ -222,10 +229,14 @@ class Crop(object):
             leftpad = max(0,-start[i])
             rightpad = max(0,start[i]+crop_size[i]-imgs.shape[i+1])
             pad.append([leftpad,rightpad])
+        #print("MIGLOG: inside class Crop: pad: {}".format(pad))  
+        if not np.asarray(pad).dtype.kind == 'i':
+            print("MIGLOG WARNING: inside class Crop: pad not integer pad: {}".format(pad))
         crop = imgs[:,
             max(start[0],0):min(start[0] + crop_size[0],imgs.shape[1]),
             max(start[1],0):min(start[1] + crop_size[1],imgs.shape[2]),
             max(start[2],0):min(start[2] + crop_size[2],imgs.shape[3])]
+        
         #print("MIGLOG: inside class Crop: crop: {},pad: {},constant_values: {}".format(crop,pad,self.pad_value))
         #crop = np.pad(crop,pad,'constant',constant_values=self.pad_value)
         #MIGBUG: After several iterations I got a TypeError: `pad_width` must be of integral type.
@@ -252,6 +263,17 @@ class Crop(object):
             for i in range(len(bboxes)):
                 for j in range(4):
                     bboxes[i][j] = bboxes[i][j]*scale
+        #print("MIGLOG: inside class Crop: crop shape: {}".format(crop.shape))
+        delta_pad = np.array(self.crop_size) - crop.shape[1:]
+        assert has_same_sign_or_zero(delta_pad), "delta_pad={} has different signs".format(delta_pad)
+        if any(delta_pad != 0):
+            print("MIGLOG WARNING: crop.shape {} != crop_size".format(crop.shape))
+            print("MIGLOG WARNING: correcting with delta_pad={}".format(delta_pad))
+            if np.all(delta_pad >=0):
+                pad3 = [[0,0],[0,delta_pad[0]],[0,delta_pad[1]],[0,delta_pad[2]]]
+                crop = np.pad(crop,pad3,'constant',constant_values =self.pad_value)
+            else:
+                crop = crop[:,:delta_pad[0],:delta_pad[1],:delta_pad[2]]
         return crop, target, bboxes, coord
     
 class LabelMapping(object):
@@ -275,8 +297,12 @@ class LabelMapping(object):
         th_pos = self.th_pos
         
         output_size = []
+        #print("MIGLOG: inside LabelMapping. input_size[i]={}, stride={}".format(input_size, stride))
         for i in range(3):
-            assert(input_size[i] % stride == 0)
+            #MIGBUG: get an assert here, the normal behavior is input_size=128 and stride=4
+            #MIGBUG: sometimes input_size is 127 or 129
+            #assert(input_size[i] % stride == 0)
+            assert input_size[i] % stride == 0, "input_size={}, stride={}".format(input_size[i], stride)
             output_size.append(input_size[i] / stride)
         
         label = -1 * np.ones(output_size + [len(anchors), 5], np.float32)
@@ -404,3 +430,10 @@ def collate(batch):
         transposed = zip(*batch)
         return [collate(samples) for samples in transposed]
 
+def has_same_sign_or_zero(my_array):
+    first_non_zero_idx = np.nonzero(my_array)
+    if len(first_non_zero_idx[0]) == 0:
+        idx = 0
+    else:
+        idx = first_non_zero_idx[0][0]
+    return np.all(my_array >= 0) if my_array[idx] >= 0 else np.all(my_array <= 0)

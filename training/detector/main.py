@@ -168,7 +168,7 @@ def main():
             lr = 0.01 * args.lr
         return lr
     
-    print("MIGLOG: Starting training...")
+    print("MIGLOG: Starting training for {} epochs ".format(args.epochs + 1 - start_epoch))
     for epoch in range(start_epoch, args.epochs + 1):
         print("MIGLOG: Training detector in epoch {}".format(epoch))
         train(train_loader, net, loss, epoch, optimizer, get_lr, args.save_freq, save_dir)
@@ -177,14 +177,16 @@ def main():
 
 def train(data_loader, net, loss, epoch, optimizer, get_lr, save_freq, save_dir):
     start_time = time.time()
-    
     net.train()
     lr = get_lr(epoch)
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
+    print("MIGLOG: learning rate: {}".format(lr)) 
 
     metrics = []
+    print("MIGLOG: len dataset={}".format(len(data_loader)))
     for i, (data, target, coord) in enumerate(data_loader):
+        #print("MIGLOG: getting metrics for data {}".format(i))
         data = Variable(data.cuda(async = True))
         target = Variable(target.cuda(async = True))
         coord = Variable(coord.cuda(async = True))
@@ -197,7 +199,8 @@ def train(data_loader, net, loss, epoch, optimizer, get_lr, save_freq, save_dir)
 
         loss_output[0] = loss_output[0].data[0]
         metrics.append(loss_output)
-
+    print("MIGLOG: Number of metrics computed: {}".format(len(metrics)))
+        
     if epoch % args.save_freq == 0:            
         state_dict = net.module.state_dict()
         for key in state_dict.keys():
