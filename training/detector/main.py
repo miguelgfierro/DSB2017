@@ -48,11 +48,11 @@ parser.add_argument('--save-dir', default='', type=str, metavar='SAVE',
                     help='directory to save checkpoint (default: none)')
 parser.add_argument('--test', default=0, type=int, metavar='TEST',
                     help='1 do test evaluation, 0 not')
-parser.add_argument('--split', default=8, type=int, metavar='SPLIT',
+parser.add_argument('--split', default=4, type=int, metavar='SPLIT',
                     help='In the test phase, split the image to 8 parts')
 parser.add_argument('--gpu', default='all', type=str, metavar='N',
                     help='use gpu')
-parser.add_argument('--n_test', default=8, type=int, metavar='N',
+parser.add_argument('--n_test', default=4, type=int, metavar='N',
                     help='number of gpu for test')
 
 def main():
@@ -74,8 +74,8 @@ def main():
             start_epoch = checkpoint['epoch'] + 1
         if not save_dir:
             save_dir = checkpoint['save_dir']
-        else:
-            save_dir = os.path.join('results',save_dir)
+        #else: #mig
+            #save_dir = os.path.join('results',save_dir) #mig
         net.load_state_dict(checkpoint['state_dict'])
     else:
         if start_epoch == 0:
@@ -83,8 +83,8 @@ def main():
         if not save_dir:
             exp_id = time.strftime('%Y%m%d-%H%M%S', time.localtime())
             save_dir = os.path.join('results', args.model + '-' + exp_id)
-        else:
-            save_dir = os.path.join('results',save_dir)
+        #else: #mig
+        #    save_dir = os.path.join('results',save_dir) #mig
     
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)

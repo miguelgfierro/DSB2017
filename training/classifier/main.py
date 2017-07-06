@@ -115,8 +115,8 @@ def main():
             start_epoch = checkpoint['epoch'] + 1
         if not save_dir:
             save_dir = checkpoint['save_dir']
-        else:
-            save_dir = os.path.join('results',save_dir)
+        #else: #mig
+        #    save_dir = os.path.join('results',save_dir) #mig
         case_net.load_state_dict(checkpoint['state_dict'])
     else:
         if start_epoch == 0:
@@ -124,8 +124,8 @@ def main():
         if not save_dir:
             exp_id = time.strftime('%Y%m%d-%H%M%S', time.localtime())
             save_dir = os.path.join('results', args.model1 + '-' + exp_id)
-        else:
-            save_dir = os.path.join('results',save_dir)
+        #else:
+        #    save_dir = os.path.join('results',save_dir)
     if args.epochs == None:
         end_epoch = args.lr_stage2[-1]
     else:
